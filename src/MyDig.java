@@ -13,40 +13,28 @@ public class MyDig {
             Message queryMessage = Message.newQuery(queryRecord);
             System.out.println(queryMessage.toString());
 
+            SimpleResolver resolver = new SimpleResolver("198.41.0.4");
+            Message replyMessage = resolver.send(queryMessage);
+            System.out.println(replyMessage.toString());
         } catch (TextParseException textEx){
             System.err.println("Error: Unable to parse domain name");
         } catch (Exception e) {
-            System.out.println(e.toString());
+            System.err.println(e.toString());
         }
 
-        
+
         //Our goal
-        try{
-            Lookup look = new Lookup(new Name(args[0]));
-            look.run();
-            Record[] records = look.getAnswers();
-            for (Record rec:records) {
-                System.out.println(rec.toString());
-            }
-        }
-        catch (Exception e){
-            System.out.println(e.toString());
-        }
-
-    }
-
-    private Message messageWithNodes(String query, String[] names) throws TextParseException {
-        Name queryName = Name.fromString(query);
-        Record question = Record.newRecord(queryName, Type.SRV, DClass.IN);
-        Message queryMessage = Message.newQuery(question);
-        Message result = new Message();
-        result.setHeader(queryMessage.getHeader());
-        result.addRecord(question, Section.QUESTION);
-
-        for (String name1 : names){
-            result.addRecord(new SRVRecord(queryName, DClass.IN, 1, 1, 1, 8080, Name.fromString(name1)), Section.ANSWER);
-        }
-
-        return result;
+//        try{
+//            Lookup look = new Lookup(new Name(args[0]));
+//            look.run();
+//            Record[] records = look.getAnswers();
+//            for (Record rec:records) {
+//                System.out.println(rec.toString());
+//            }
+//        }
+//        catch (Exception e){
+//            System.out.println(e.toString());
+//        }
+//
     }
 }
