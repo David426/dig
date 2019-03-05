@@ -23,7 +23,7 @@ public class MyDig {
     }
 
     public Record executeQuery(String queryAddress, String host, String currentAuth){
-        System.out.printf("Query: [%s]->[%s] Auth:[%s]\n", queryAddress, host, currentAuth);
+        System.out.printf("Query: [%12s]->[%15s] Auth:[%15s]\n", queryAddress, host, currentAuth);
         Message query = createQuery(queryAddress);
         Message reply = null;
         try {
@@ -64,7 +64,10 @@ public class MyDig {
                     queryAddress = ((SOARecord)auRecord).getAdmin().toString();
                     return executeQuery(queryAddress, currentAuth, currentAuth);
                 } else if(auRecord.getType() == Type.NS){
-                    System.out.println("here");;
+                    String nameServerAddress = ((NSRecord)auRecord).getTarget().toString();
+                    ARecord nameServer = (ARecord) executeQuery(nameServerAddress, currentAuth, currentAuth);
+                    String nameServerHostAddress = nameServer.getAddress().getHostAddress();
+                    return executeQuery(inquery, nameServerHostAddress, nameServerHostAddress);
                 }
             }
             
@@ -101,7 +104,7 @@ public class MyDig {
 
 class DemoDigADome {
     public static void main(String[] args) {
-        MyDig diggyboi = new MyDig("www.news12.com");
+        MyDig diggyboi = new MyDig("www.linkdin.com");
         Record answer = diggyboi.run();
         System.out.println(answer);
     }
