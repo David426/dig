@@ -9,64 +9,70 @@ import java.net.UnknownHostException;
 
 public class MyDig {
 
-    static String[] ROOT_SERVERS = {"198.41.0.4", "199.9.14.201", "192.33.4.12", "199.7.91.13", "192.203.230.10", "192.5.5.241",
+    final String[] ROOT_SERVERS = {"198.41.0.4", "199.9.14.201", "192.33.4.12", "199.7.91.13", "192.203.230.10", "192.5.5.241",
     "192.112.36.4", "198.97.190.53", "192.36.148.17", "192.58.128.30", "193.0.14.129", "199.7.83.42", "202.12.27.33"};
 
-    public static void main(String[] args){
-        Boolean isResolved = false;
-        String queryAddress = args[0];
-        Message queryMessage = createQuery(queryAddress);
-//        System.out.println(queryMessage.toString());
+    String inquery;
 
+    public MyDig(String inquery){
+        this.inquery = inquery;
+    }
+
+    public Record run(){
+        return executeQuery(inquery, ROOT_SERVERS[0], ROOT_SERVERS[0]);
+    }
+
+    public Record executeQuery(String queryAddress, String host, String currentAuth){
+        System.out.printf("Query: [%s]->[%s] Auth:[%s]\n", queryAddress, host, currentAuth);
+        Message query = createQuery(queryAddress);
+        Message reply = null;
         try {
-            SimpleResolver resolver = new SimpleResolver(ROOT_SERVERS[0]);
-            while (!isResolved) {
-                Message reply = resolver.send(queryMessage);
-                System.out.println(reply.toString());
-                Record[] answers = reply.getSectionArray(Section.ANSWER);
-                Record[] authorityRecords = reply.getSectionArray(Section.AUTHORITY);
-                Record[] additionalRecords = reply.getSectionArray(Section.ADDITIONAL);
-//                System.out.println(reply.findRecord(authorityRecords[0], 2));
-
-                if(answers.length > 0){
-                    System.out.println("###### Answer Found");
-                    if (answers[0].getType() == Type.CNAME) {
-                        System.out.printf("CNAME: %s\n", ((CNAMERecord)answers[0]).getTarget().toString());
-                        queryAddress = ((CNAMERecord)answers[0]).getTarget().toString();
-                        resolver = new SimpleResolver(ROOT_SERVERS[0]);
-//                        isResolved=  true;
-                    } else {
-                        System.out.println("##### QUERY RESOLVED!!#####");
-                        System.out.println(reply);
-                        System.out.println(answers[0]);
-                        isResolved = true;
-                    }
-                } else if(additionalRecords.length > 0){
-                    for (int i = 0; i < additionalRecords.length; i++) {
-                        if (additionalRecords[i].getType() == Type.A) {
-//                            queryAddress = ((ARecord) additionalRecords[i]).getAddress().getHostAddress();
-                            resolver = new SimpleResolver(((ARecord) additionalRecords[i]).getAddress().getHostAddress());
-                            break;
-                        }
-                    }
-                } else if (authorityRecords.length > 0) {
-//                    queryAddress = authorityRecords[0].getName()
-                    System.out.println("#####AUTH RECORD NAME######");
-                    queryAddress = ((SOARecord)authorityRecords[0]).getAdmin().toString();
-                } else {
-                    System.out.println("Something went wrong :/");
-                    System.out.println(reply);
-                    isResolved = true;
-                }
-                queryMessage = createQuery(queryAddress);
-            }
-
+            SimpleResolver resolver= new SimpleResolver(host);
+            reply = resolver.send(query);
         } catch (UnknownHostException e) {
+            System.err.printf("Host [%s] was unable to be found\n", queryAddress);
             e.printStackTrace();
         } catch (IOException e){
             e.printStackTrace();
         }
-
+        if(reply == null){
+            System.err.printf("Reply not found for [%s], [%s], [%s]\n", queryAddress, host, currentAuth);
+            System.exit(-1);
+        }
+        Record[] answers = reply.getSectionArray(Section.ANSWER);
+        Record[] authorityRecords = reply.getSectionArray(Section.AUTHORITY);
+        Record[] additionalRecords = reply.getSectionArray(Section.ADDITIONAL);
+        if(answers.length > 0){
+            for (Record answer: answers) {
+                if(answer.getType() == Type.CNAME){
+                    queryAddress = ((CNAMERecord)answers[0]).getTarget().toString();
+                    return executeQuery(queryAddress, currentAuth, currentAuth);
+                } else {
+                    return answer;
+                }
+            }
+        } else if (additionalRecords.length > 0){
+            for(Record adRecord : additionalRecords){
+                if(adRecord.getType() == Type.A){
+                    host = ((ARecord) adRecord).getAddress().getHostAddress();
+                    return executeQuery(queryAddress, host, currentAuth);
+                }
+            }
+        } else if (authorityRecords.length > 0){
+            for(Record auRecord : authorityRecords){
+                if(auRecord.getType() == Type.SOA){
+                    queryAddress = ((SOARecord)auRecord).getAdmin().toString();
+                    return executeQuery(queryAddress, currentAuth, currentAuth);
+                } else if(auRecord.getType() == Type.NS){
+                    System.out.println("here");;
+                }
+            }
+            
+        } else {
+            System.err.printf("Empty reply  found for [%s], [%s], [%s]\n", queryAddress, host, currentAuth);
+            System.exit(-1);
+        }
+        return null;
     }
 
     public static Message createQuery(String query){
@@ -78,9 +84,9 @@ public class MyDig {
                 queryName = Name.fromString(query);
             }
         } catch (TextParseException textEx){
-
+            System.err.printf("Text Parse Exception of [%s]\n", query);
         } catch (NameTooLongException nameEx){
-
+            System.err.printf("Name Too Long Exception of [%s]\n", query);
         }
 //        System.out.println(queryName.toString());
         if(queryName != null){
@@ -90,5 +96,13 @@ public class MyDig {
         } else {
             return null;
         }
+    }
+}
+
+class DemoDigADome {
+    public static void main(String[] args) {
+        MyDig diggyboi = new MyDig("www.news12.com");
+        Record answer = diggyboi.run();
+        System.out.println(answer);
     }
 }
