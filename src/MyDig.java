@@ -23,7 +23,7 @@ public class MyDig {
     }
 
     public Record executeQuery(String queryAddress, String host, String currentAuth){
-        System.out.printf("Query: [%12s]->[%15s] Auth:[%15s]\n", queryAddress, host, currentAuth);
+//        System.out.printf("Query: [%-20s]->[%-15s] Auth:[%-15s]\n", queryAddress, host, currentAuth);
         Message query = createQuery(queryAddress);
         Message reply = null;
         try {
@@ -103,9 +103,17 @@ public class MyDig {
 }
 
 class DemoDigADome {
+
     public static void main(String[] args) {
-        MyDig diggyboi = new MyDig("www.linkdin.com");
-        Record answer = diggyboi.run();
-        System.out.println(answer);
+        String[] top25 = {"Google.com", "Youtube.com", "Facebook.com", "Baidu.com", "Wikipedia.org", "Qq.com",
+                "Yahoo.com", "Tmall.com", "Taobao.com", "Amazon.com", "Twitter.com", "Sohu.com", "Jd.com", "Vk.com",
+                "Live.com", "Instagram.com", "Yandex.ru", "Weibo.com", "Sina.com.cn", "360.cn", "Reddit.com", "Login.tmall.com",
+                "Blogspot.com", "Netflix.com", "Linkedin.com"};
+        MyDig diggyboi = null;
+        for(String site: top25){
+            diggyboi = new MyDig(site);
+            Record answer = diggyboi.run();
+            System.out.println(answer);
+        }
     }
 }
