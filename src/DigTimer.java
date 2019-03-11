@@ -7,8 +7,15 @@ public class DigTimer {
     long runTime;
 
     MyDig digger;
-    public DigTimer(String inquery){
+    public DigTimer(){
+        digger = null;
+        runTime = -1;
+    }
+
+    public void newQuery(String inquery){
         digger = new MyDig(inquery);
+        start = 0;
+        stop = 0;
         runTime = -1;
     }
 
