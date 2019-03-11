@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="mydig:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/mydig_jar</output-path>
+    <root id="archive" name="mydig.jar">
+      <element id="module-output" name="mydig" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/org.xbill.dns_2.1.7.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
