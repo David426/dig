@@ -4,6 +4,7 @@ CSE 310 Assignment: 2
 import org.xbill.DNS.*;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
 
@@ -17,7 +18,7 @@ public class MyDig {
     public MyDig(String inquery){
         this.inquery = inquery;
     }
-
+//157.255.246.101
     public Record run(){
         return executeQuery(inquery, ROOT_SERVERS[0], ROOT_SERVERS[0]);
     }
@@ -30,13 +31,15 @@ public class MyDig {
             SimpleResolver resolver= new SimpleResolver(host);
             reply = resolver.send(query);
         } catch (UnknownHostException e) {
-            System.err.printf("Host [%s] was unable to be found\n", queryAddress);
+            System.err.printf("\nHost [%s] was unable to be found\n", queryAddress);
             e.printStackTrace();
         } catch (IOException e){
-            e.printStackTrace();
+            System.err.printf("\n%s: for [%s]\n", e.toString(), host);
+            return null;
+//            e.printStackTrace();
         }
         if(reply == null){
-            System.err.printf("Reply not found for [%s], [%s], [%s]\n", queryAddress, host, currentAuth);
+            System.err.printf("\nReply not found for [%s], [%s], [%s]\n", queryAddress, host, currentAuth);
             System.exit(-1);
         }
         Record[] answers = reply.getSectionArray(Section.ANSWER);
@@ -55,10 +58,13 @@ public class MyDig {
             for(Record adRecord : additionalRecords){
                 if(adRecord.getType() == Type.A){
                     host = ((ARecord) adRecord).getAddress().getHostAddress();
-                    return executeQuery(queryAddress, host, currentAuth);
+                    Record addRet = executeQuery(queryAddress, host, currentAuth);
+                    if(addRet != null){
+                        return addRet;
+                    }
                 }
             }
-        } else if (authorityRecords.length > 0){
+        } else if (auth/orityRecords.length > 0){
             for(Record auRecord : authorityRecords){
                 if(auRecord.getType() == Type.SOA){
                     queryAddress = ((SOARecord)auRecord).getAdmin().toString();
@@ -105,15 +111,25 @@ public class MyDig {
 class DemoDigADome {
 
     public static void main(String[] args) {
+        MyDig dig = new MyDig("Qq.com");
+
         String[] top25 = {"Google.com", "Youtube.com", "Facebook.com", "Baidu.com", "Wikipedia.org", "Qq.com",
                 "Yahoo.com", "Tmall.com", "Taobao.com", "Amazon.com", "Twitter.com", "Sohu.com", "Jd.com", "Vk.com",
                 "Live.com", "Instagram.com", "Yandex.ru", "Weibo.com", "Sina.com.cn", "360.cn", "Reddit.com", "Login.tmall.com",
                 "Blogspot.com", "Netflix.com", "Linkedin.com"};
-        MyDig diggyboi = null;
+        DigTimer digTime = null;
         for(String site: top25){
-            diggyboi = new MyDig(site);
-            Record answer = diggyboi.run();
-            System.out.println(answer);
+            System.out.println(site + "...");
+            digTime = new DigTimer(site);
+            for(int i = 0; i < 10; i++){
+                digTime.runDig();
+                System.out.printf("%d: %5dms ", i+1, digTime.getLastTime());
+            }
+            System.out.println();
         }
+//        System.out.println("Bonus : ");
+//        diggyboi = new MyDig("google.co.jp");
+//        Record answer = diggyboi.run();
+//        System.out.println(answer);
     }
 }
