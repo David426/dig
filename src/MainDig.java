@@ -7,7 +7,11 @@ public class MainDig {
         if(args.length > 0){
             DigTimer digTimer = new DigTimer();
             digTimer.newQuery(args[0]);
+            System.out.println("QUESTION SECTION: ");
+            System.out.println(digTimer.digger.getQuestion());
+            System.out.println();
             Record rec = digTimer.runDig();
+
             System.out.println("ANSWER SECTION: ");
             System.out.println(rec.toString());
 

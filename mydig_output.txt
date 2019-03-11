@@ -1,0 +1,8 @@
+QUESTION SECTION: 
+reddit.com.		0	IN	A
+
+ANSWER SECTION: 
+reddit.com.		300	IN	A	151.101.65.140
+
+Query Time: 118msec
+WHEN: Mon Mar 11 01:56:54 EDT 2019

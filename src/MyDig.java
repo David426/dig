@@ -24,6 +24,8 @@ public class MyDig {
         return executeQuery(inquery, ROOT_SERVERS[0], ROOT_SERVERS[0]);
     }
 
+    public Record getQuestion(){ return createQuery(inquery).getSectionArray(Section.QUESTION)[0];}
+
     public Record executeQuery(String queryAddress, String host, String currentAuth){
 //        System.out.printf("Query: [%-20s]->[%-15s] Auth:[%-15s]\n", queryAddress, host, currentAuth);
 
