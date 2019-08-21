@@ -1,5 +1,4 @@
-David Sill 111486160
-CSE 310 Assignment 2
+
 
 External Library used:  dnsjava (org.xbill.DNS)
 
